@@ -1,0 +1,8 @@
+{
+  "name": "job-tracker",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
