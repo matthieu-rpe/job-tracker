@@ -1,8 +1,12 @@
 {
   "name": "job-tracker",
   "private": true,
+  "license": "MIT",
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "api:dev": "npm run start:dev -w @job-tracker/api"
+  }
 }
