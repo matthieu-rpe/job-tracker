@@ -12,6 +12,8 @@
     "api:dev": "npm run start:dev -w @job-tracker/api",
     "api:migrate": "npm run db:migrate -w @job-tracker/api",
     "api:generate": "npm run db:generate -w @job-tracker/api",
-    "api:studio": "npm run db:studio -w @job-tracker/api"
+    "api:studio": "npm run db:studio -w @job-tracker/api",
+    "prettier:check": "prettier --check .",
+    "prettier:write": "prettier --write ."
   }
 }
