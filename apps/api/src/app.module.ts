@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 
 // Nest modules
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 
 // Global modules
@@ -13,32 +13,49 @@ import { UsersModule } from './users/users.module';
 
 // Filters
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    LoggerModule.forRoot({
-      pinoHttp: {
-        genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
-        transport:
-          process.env.NODE_ENV !== 'production'
-            ? {
-                target: 'pino-pretty',
-                options: {
-                  colorize: true,
-                  singleLine: true,
-                  levelFirst: true,
-                  translateTime: 'SYS:standard',
-                },
-              }
-            : undefined,
-      },
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 100,
+        },
+      ],
+    }),
+    LoggerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        pinoHttp: {
+          genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
+          transport:
+            configService.get('NODE_ENV') !== 'production'
+              ? {
+                  target: 'pino-pretty',
+                  options: {
+                    colorize: true,
+                    singleLine: true,
+                    levelFirst: true,
+                    translateTime: 'SYS:standard',
+                  },
+                }
+              : undefined,
+        },
+      }),
     }),
     PrismaModule,
     UsersModule,
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
