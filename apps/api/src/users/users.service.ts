@@ -29,7 +29,13 @@ export class UsersService {
       },
     });
 
-    this.logger.log('User created', UsersMapper.toLog(user));
+    this.logger.log(
+      {
+        method: 'create',
+        user: UsersMapper.toLog(user),
+      },
+      'User created successfully',
+    );
     return user;
   }
 }
