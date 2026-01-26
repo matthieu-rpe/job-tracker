@@ -117,6 +117,7 @@ async function bootstrap() {
   );
 
   // 7. LAUNCH
+  app.enableShutdownHooks(); // process crash or shutdown : close db connection
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
 }
