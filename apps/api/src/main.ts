@@ -7,6 +7,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import * as packageJson from '../package.json';
 
 // Dependencies
 import helmet from 'helmet';
@@ -116,8 +118,21 @@ async function bootstrap() {
     }),
   );
 
-  // 7. LAUNCH
+  // 7. HOOKS
   app.enableShutdownHooks(); // process crash or shutdown : close db connection
+
+  // 8. SWAGGER : API documentation
+  if (configService.get('NODE_ENV') !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Job Tracker API')
+      .setVersion(packageJson.version)
+      .build();
+
+    const documentFactory = () => SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, documentFactory);
+  }
+
+  // 9. LAUNCH
   const port = configService.get<number>('PORT', 3000);
   await app.listen(port);
 }
