@@ -15,6 +15,8 @@ export class UsersMapper {
   }
 
   static toResponse(user: UserModel): UserResponseDto {
-    return plainToInstance(UserResponseDto, user);
+    return plainToInstance(UserResponseDto, user, {
+      excludeExtraneousValues: true,
+    });
   }
 }
