@@ -10,7 +10,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
 // DB Models
-import { UserModel } from 'src/generated/prisma/models';
+import { UserCreateInput, UserModel } from 'src/generated/prisma/models';
 import { UsersMapper } from './users.mapper';
 
 @Injectable()
@@ -30,12 +30,12 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    const user = await this.prisma.user.create({
-      data: {
-        ...createUserDto,
-        password: hashedPassword,
-      },
-    });
+    const data: UserCreateInput = {
+      ...createUserDto,
+      password: hashedPassword,
+    };
+
+    const user = await this.prisma.user.create({ data });
 
     this.logger.log(
       {
