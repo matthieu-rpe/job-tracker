@@ -7,13 +7,21 @@
     "packages/*"
   ],
   "scripts": {
+    "// --- Infra ---": "",
     "db:up": "docker compose -f infra/postgres/docker-compose.yml up -d",
     "db:down": "docker compose -f infra/postgres/docker-compose.yml down",
+    "// --- API (@job-tracker/api) ---": "",
+    "api:migrate": "npm run prisma:migrate -w @job-tracker/api",
+    "api:generate": "npm run prisma:generate -w @job-tracker/api",
+    "api:studio": "npm run prisma:studio -w @job-tracker/api",
     "api:dev": "npm run start:dev -w @job-tracker/api",
-    "api:migrate": "npm run db:migrate -w @job-tracker/api",
-    "api:generate": "npm run db:generate -w @job-tracker/api",
-    "api:studio": "npm run db:studio -w @job-tracker/api",
-    "prettier:check": "prettier --check .",
-    "prettier:write": "prettier --write ."
+    "api:build": "npm run start:build -w @job-tracker/api",
+    "api:test": "npm run test -w @job-tracker/api",
+    "api:test:watch": "npm run test:watch -w @job-tracker/api",
+    "api:test:e2e": "npm run test:e2e -w @job-tracker/api",
+    "api:lint": "npm run lint -w @job-tracker/api",
+    "// --- Global tools ---": "",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   }
 }
