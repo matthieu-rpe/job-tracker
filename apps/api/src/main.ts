@@ -78,7 +78,7 @@ async function bootstrap() {
   // 6.2 GUARDS
 
   /*
-   * 6.3 & 6.5 (req+res) INTERCEPTORS
+   * 6.3 INTERCEPTORS (on request)
    *
    * Inspirated by the Aspect Oriented Programming (AOP) technique.
    * - bind extra logic before / after method execution
@@ -87,13 +87,6 @@ async function bootstrap() {
    * - extend the basic function behavior
    * - completely override a function depending on specific conditions (e.g. for caching purpose)
    */
-
-  // Serializer for every class (new keyword that creates a prototype different from Object.prototype) that exclude all fields excepts one with @Expose
-  app.useGlobalInterceptors(
-    new ClassSerializerInterceptor(app.get(Reflector), {
-      strategy: 'excludeAll',
-    }),
-  );
 
   /*
    * 6.4 PIPES
@@ -108,6 +101,18 @@ async function bootstrap() {
       transform: true,
       whitelist: true,
       forbidNonWhitelisted: true,
+    }),
+  );
+
+  /*
+   * 6.5 INTERCEPTORS (on response)
+   * see 6.3
+   */
+
+  // Serializer for every class (Reflector is interface to read metadata of prototype; Interceptor serialize raw data into response DTO)
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector), {
+      strategy: 'excludeAll',
     }),
   );
 
