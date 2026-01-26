@@ -1,27 +1,52 @@
-# Job Tracker - Home Lab Edition 🚀
+# 🚀 Job Tracker - Monorepo Boilerplate
 
-A personal control center designed to manage job applications and monitor home-lab infrastructure (Raspberry Pi).
+A professional-grade full-stack control center designed to manage job applications and monitor home-lab infrastructure.
 
-## 📌 Project Vision
-The goal is to build a full-stack CRM to track job applications while learning to manage a real-world infrastructure using Docker and the Prometheus/Grafana monitoring stack.
+## 🏗️ Architecture
 
-## 🏗️ Architecture (Monorepo)
-This project uses a monorepo structure to separate concerns while maintaining technical consistency:
+This project is a **Monorepo** managed with npm workspaces. To maintain consistency, **all commands must be executed from this root directory**.
 
-- **apps/**: Executable applications (API, Web client, etc.).
-- **packages/**: Shared libraries, utilities, and TypeScript types.
-- **infra/**: Docker configurations and deployment scripts for Raspberry Pi.
+- **📂 apps/api**: The core NestJS API (Security hardened, Observability focused).
+  > 💡 _For detailed API documentation, features, and setup, see [apps/api/README.md](./apps/api/README.md)._
+- **📂 packages/**: (Placeholder) Future shared libraries and utilities.
+- **📂 infra/**: Deployment blueprints (Docker Compose for Postgres, Monitoring).
 
-## 🛠️ Tech Stack (Target)
-- **Backend:** NestJS (Node v22 LTS)
-- **Database:** PostgreSQL with Prisma ORM
-- **Frontend:** Vue 3 or React (TBD)
-- **Ops/Monitoring:** Docker, Prometheus, Loki, Grafana
+## 🛠️ Tech Stack
 
-## 🚀 Quick Start
-1. Ensure `nvm` is installed.
-2. Run `nvm use` to switch to Node v22.
-3. Run `npm install` at the root level.
+- **Runtime**: Node.js v22 (LTS)
+- **Database**: PostgreSQL + Prisma ORM
+- **Security**: JWT (Stateless), RBAC ready, Helmet, Throttler
+- **Monitoring**: Pino Logging (JSON format)
 
----
-*Work in progress.*
+## ⌨️ Global Scripts (Root Only)
+
+Do not `cd` into subfolders. Use these commands from the root:
+
+### 🐳 Infrastructure
+
+- `npm run db:up`: Start the local PostgreSQL container.
+- `npm run db:down`: Stop the infrastructure.
+
+### 🔑 Database (API)
+
+- `npm run api:migrate`: Run Prisma migrations.
+- `npm run api:studio`: Open Prisma Studio.
+- `npm run api:generate`: Generate Prisma Client.
+
+### 🚀 Development & Quality
+
+- `npm run api:dev`: Launch the API in watch mode.
+- `npm run api:test`: Run API unit tests.
+- `npm run api:test:watch`: Run API unit tests with watch mode for development purpose.
+- `npm run api:test:e2e`: Run API end-to-end tests.
+- `npm run api:lint`: Run ESLint on the API project.
+- `npm run format`: Format the entire monorepo with Prettier.
+
+## 🚀 Getting Started
+
+1. **Environment**: `nvm use` (requires Node 22).
+2. **Install**: `npm install`.
+3. **Infrastructure**: `cp infra/postgres/.env.example infra/postgres/.env` and fill the variables. Then run the local DB `npm run db:up`.
+4. **Configuration**: `cp apps/api/.env.example apps/api/.env` and fill the variables from the DB you want to use.
+5. **Database Setup**: `npm run db:migrate`.
+6. **Launch**: `npm run api:dev`.
