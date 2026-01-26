@@ -5,15 +5,15 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
 
+// Filters
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+
 // Global modules
 import { PrismaModule } from './prisma/prisma.module';
 
 // App modules
 import { UsersModule } from './users/users.module';
-
-// Filters
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
