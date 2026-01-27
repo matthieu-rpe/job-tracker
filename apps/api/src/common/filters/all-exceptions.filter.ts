@@ -13,6 +13,10 @@ import { Request } from 'express';
 import { HttpAdapterHost } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
 
+interface NestExceptionResponse {
+  message?: string | string[];
+}
+
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
@@ -32,6 +36,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
+    const exceptionResponse =
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : 'Internal server error';
+
     this.logger.error({
       requestId,
       msg: 'Unhandled Exception',
@@ -47,9 +56,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path,
       message:
-        exception instanceof HttpException
-          ? exception.getResponse()
-          : 'Internal server error',
+        typeof exceptionResponse === 'object' && exceptionResponse !== null
+          ? (exceptionResponse as NestExceptionResponse).message ||
+            exceptionResponse
+          : exceptionResponse,
     };
 
     httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
