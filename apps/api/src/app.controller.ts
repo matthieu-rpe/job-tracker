@@ -1,9 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { Body, Controller, Get, Post } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiProperty } from '@nestjs/swagger';
 
 import { Expose } from 'class-transformer';
+import { IsString } from 'class-validator';
 
-export class HealthResponseDto {
+class HealthResponseDto {
   @Expose()
   status: string;
 
@@ -12,10 +13,16 @@ export class HealthResponseDto {
   }
 }
 
+class ValidationTestDto {
+  @IsString()
+  @ApiProperty({ example: 'ok' })
+  status: string;
+}
+
 @Controller('health')
 export class AppController {
   @Get()
-  @ApiOperation({ summary: 'Returns status ok for health check.' })
+  @ApiOperation({ summary: 'Returns status ok for GET health check.' })
   @ApiOkResponse({
     description: 'Health check passed',
     schema: {
@@ -30,5 +37,23 @@ export class AppController {
   })
   getHealth(): HealthResponseDto {
     return new HealthResponseDto({ status: 'ok' });
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Returns status ok for POST health check.' })
+  @ApiOkResponse({
+    description: 'Health check passed',
+    schema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          example: 'ok',
+        },
+      },
+    },
+  })
+  postHealth(@Body() body: ValidationTestDto) {
+    return new HealthResponseDto({ status: body.status });
   }
 }
