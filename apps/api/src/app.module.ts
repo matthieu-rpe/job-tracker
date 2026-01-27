@@ -32,6 +32,7 @@ import { UsersModule } from './users/users.module';
       useFactory: (configService: ConfigService) => ({
         pinoHttp: {
           genReqId: (req) => req.headers['x-request-id'] || crypto.randomUUID(),
+          level: configService.get('NODE_ENV') === 'test' ? 'fatal' : 'info',
           transport:
             configService.get('NODE_ENV') !== 'production'
               ? {
