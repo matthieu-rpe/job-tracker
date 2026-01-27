@@ -1,6 +1,17 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 
+import { Expose } from 'class-transformer';
+
+export class HealthResponseDto {
+  @Expose()
+  status: string;
+
+  constructor(dto: HealthResponseDto) {
+    Object.assign(this, dto);
+  }
+}
+
 @Controller('health')
 export class AppController {
   @Get()
@@ -17,7 +28,7 @@ export class AppController {
       },
     },
   })
-  getHealth() {
-    return { status: 'ok' };
+  getHealth(): HealthResponseDto {
+    return new HealthResponseDto({ status: 'ok' });
   }
 }
