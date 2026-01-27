@@ -3,7 +3,6 @@ import {
   ApiConflictResponse,
   ApiCreatedResponse,
   ApiOperation,
-  ApiTags,
 } from '@nestjs/swagger';
 
 // Services
@@ -15,7 +14,6 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { UsersMapper } from './users.mapper';
 
 @Controller('users')
-@ApiTags('Users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
