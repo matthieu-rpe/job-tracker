@@ -9,6 +9,9 @@ import { LoggerModule } from 'nestjs-pino';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
+// App controller
+import { AppController } from './app.controller';
+
 // Global modules
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -51,7 +54,7 @@ import { UsersModule } from './users/users.module';
     PrismaModule,
     UsersModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
