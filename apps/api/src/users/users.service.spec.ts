@@ -6,7 +6,9 @@ import bcrypt from 'bcrypt';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 import { UsersService } from './users.service';
-import { UserCreateInput, UserModel } from 'src/generated/prisma/models';
+import { UserModel } from 'src/generated/prisma/models';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UsersMapper } from './users.mapper';
 
 const mockPrisma = {
   user: {
@@ -14,6 +16,10 @@ const mockPrisma = {
     create: jest.fn(),
   },
 };
+
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+}));
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -30,7 +36,7 @@ describe('UsersService', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
@@ -39,51 +45,92 @@ describe('UsersService', () => {
 
   describe('create', () => {
     it('should throw ConflictException if email exists', async () => {
-      const newUserEmail = 'john@doe.com';
-      const existingUser: UserModel = {
-        id: 1,
-        email: newUserEmail,
-        password: 'hashed_password',
-        lastname: null,
-        firstname: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+      // ARRANGE
+      const createUserDto: CreateUserDto = {
+        email: 'john@doe.com',
+        password: '',
       };
 
-      mockPrisma.user.findUnique.mockResolvedValue(existingUser);
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 1,
+        email: createUserDto.email,
+        password: '',
+        lastname: null,
+        firstname: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      } as UserModel);
 
-      await expect(
-        service.create({ email: newUserEmail, password: 'Password123!' }),
-      ).rejects.toThrow(ConflictException);
+      // CALL + ASSERT
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        ConflictException,
+      );
     });
 
-    it('should hash the password and save it to the database', async () => {
+    it('should hash the password before calling prisma.create', async () => {
+      // ARRANGE
       const rawPassword = 'Password123!';
+      const hashedPassword = 'fake_hashed_password';
 
-      // Config mock
-      mockPrisma.user.findUnique.mockResolvedValue(null);
-      mockPrisma.user.create.mockImplementation(
-        (args: { data: UserCreateInput }): UserModel => ({
-          id: 1,
-          email: args.data.email,
-          password: args.data.password,
-          lastname: null,
-          firstname: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
-      );
-
-      const spyHash = jest.spyOn(bcrypt, 'hash') as jest.SpyInstance;
-
-      const result = await service.create({
+      const createUserDto: CreateUserDto = {
         email: 'john@doe.com',
         password: rawPassword,
+      };
+
+      (bcrypt.hash as jest.Mock).mockResolvedValue(hashedPassword);
+      jest.spyOn(UsersMapper, 'toLog').mockReturnValue({
+        id: 1,
+        email: createUserDto.email,
+        lastname: null,
+        firstname: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
       });
 
-      expect(spyHash).toHaveBeenCalledWith(rawPassword, 10);
-      expect(result.password).not.toBe(rawPassword);
-      expect(result.password).toMatch(/^\$2[ayb]\$.{56}$/);
+      // CALL
+      await service.create(createUserDto);
+
+      // ASSERT
+      // bcrypt has been used to hash password
+      expect(bcrypt.hash).toHaveBeenCalledWith(rawPassword, 10);
+
+      // prisma received the hashed password, not rawPassword
+      expect(mockPrisma.user.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            email: createUserDto.email,
+            password: hashedPassword,
+          },
+        }),
+      );
+    });
+
+    it('should return the exact user model created by prisma', async () => {
+      // ARRANGE
+      const createUserDto: CreateUserDto = {
+        email: 'john@doe.com',
+        password: 'fake_password',
+      };
+
+      const userModelStub: UserModel = {
+        id: 1,
+        email: createUserDto.email,
+        password: 'fake_hash_password',
+        lastname: null,
+        firstname: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      };
+
+      // Prisma returns a UserModel in the service
+      mockPrisma.user.create.mockResolvedValue(userModelStub);
+
+      // CALL
+      const result = await service.create(createUserDto);
+
+      // ASSERT
+      // expect the service to return the UserModel from prisma
+      expect(result).toEqual(userModelStub);
     });
   });
 });
