@@ -16,12 +16,17 @@
     "api:studio": "npm run prisma:studio -w @job-tracker/api",
     "api:dev": "npm run start:dev -w @job-tracker/api",
     "api:build": "npm run start:build -w @job-tracker/api",
-    "api:test": "npm run test -w @job-tracker/api",
+    "api:test": "npm run test -w @job-tracker/api --",
     "api:test:watch": "npm run test:watch -w @job-tracker/api",
     "api:test:e2e": "npm run test:e2e -w @job-tracker/api",
-    "api:lint": "npm run lint -w @job-tracker/api",
+    "api:lint": "npm run lint -w @job-tracker/api --",
     "// --- Global tools ---": "",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
   }
 }
