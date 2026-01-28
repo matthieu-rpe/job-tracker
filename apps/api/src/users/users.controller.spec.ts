@@ -4,12 +4,13 @@ import { UsersService } from './users.service';
 import { UsersMapper } from './users.mapper';
 import { UserModel } from 'src/generated/prisma/models';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UserResponseDto } from './dto/user-response.dto';
 
 const mockUsersService = {
   create: jest.fn(),
 };
 
-describe('UserController', () => {
+describe('UsersController', () => {
   let controller: UsersController;
 
   beforeEach(async () => {
@@ -22,7 +23,7 @@ describe('UserController', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   it('should be defined', () => {
@@ -30,47 +31,53 @@ describe('UserController', () => {
   });
 
   describe('create', () => {
-    it('should call service.create, use the mapper and return a clean UserResponseDto', async () => {
-      /*
-       *  ARRANGE (with strict types)
-       */
+    it('should call service.create, use the mapper and return the toResponse user', async () => {
+      // ARRANGE
+
       const createUserDto: CreateUserDto = {
-        email: 'johh@doe.com',
+        email: 'john@doe.com',
         password: 'Password123!',
       };
 
-      const mockUserFromService: UserModel = {
+      // stub user from service
+      const userModelStub: UserModel = {
         id: 1,
-        email: 'john@doe.com',
-        password: 'hashed_password',
+        email: createUserDto.email,
+        password: 'fake_hashed_password',
         lastname: null,
         firstname: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
       };
 
-      mockUsersService.create.mockResolvedValue(mockUserFromService);
-      const mapperSpy = jest.spyOn(UsersMapper, 'toResponse');
+      // stub UserResponseDto from mapper
+      const UserResponseDtoStub: UserResponseDto = {
+        id: 1,
+        email: userModelStub.email,
+        lastname: null,
+        firstname: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+      };
 
-      /*
-       *  CALL
-       */
+      mockUsersService.create.mockResolvedValue(userModelStub);
+      const mapperSpy = jest
+        .spyOn(UsersMapper, 'toResponse')
+        .mockReturnValue(UserResponseDtoStub);
+
+      // CALL
       const result = await controller.create(createUserDto);
-      const expectedResult = UsersMapper.toResponse(mockUserFromService);
-      /*
-       *  ASSERTS
-       */
 
-      // Expect call to UsersService
+      // ASSERT
+      // We called the service with expected createUserDto
       expect(mockUsersService.create).toHaveBeenCalledTimes(1);
       expect(mockUsersService.create).toHaveBeenCalledWith(createUserDto);
 
-      // Expect mapper to be called with the UsersService returned object
-      expect(mapperSpy).toHaveBeenCalledWith(mockUserFromService);
+      // Expect the returned UserModel to be mapped
+      expect(mapperSpy).toHaveBeenCalledTimes(1);
+      expect(mapperSpy).toHaveBeenCalledWith(userModelStub);
 
-      // Expect the result to respect the DTO (Contract of API)
-      expect(result).toEqual(expectedResult);
-      expect(result).not.toHaveProperty('password'); // smoke test
+      // Expect the mapped ToResponse to be returned as UserResponseDto (Contract of API)
+      expect(result).toBe(UserResponseDtoStub);
     });
   });
 });
