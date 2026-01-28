@@ -132,5 +132,52 @@ describe('UsersService', () => {
       // expect the service to return the UserModel from prisma
       expect(result).toEqual(userModelStub);
     });
+
+    it('should log the user creation using the mapper (security check)', async () => {
+      // ARRANGE
+      const userModelStub: UserModel = {
+        id: 1,
+        email: 'test@test.com',
+        password: 'hash',
+        lastname: null,
+        firstname: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      };
+
+      const userToLogStub: ReturnType<typeof UsersMapper.toLog> = {
+        id: 1,
+        email: 'test@test.com',
+        lastname: null,
+        firstname: null,
+        createdAt: new Date('2026-01-01T00:00:00Z'),
+        updatedAt: new Date('2026-01-01T00:00:00Z'),
+      };
+
+      mockPrisma.user.create.mockResolvedValue(userModelStub);
+      const mapperSpy = jest
+        .spyOn(UsersMapper, 'toLog')
+        .mockReturnValue(userToLogStub);
+      const loggerSpy = jest.spyOn(service['logger'], 'log');
+
+      // CALL
+      await service.create({
+        email: userModelStub.email,
+        password: 'Password123!',
+      });
+
+      // ASSERT
+      // 1. Mapper.toLog has been called using the returned prisma user model
+      expect(mapperSpy).toHaveBeenCalledWith(userModelStub);
+
+      // 2. Logger has received the secured mapped user object
+      expect(loggerSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          method: 'create',
+          user: userToLogStub,
+        }),
+        'User created successfully',
+      );
+    });
   });
 });
