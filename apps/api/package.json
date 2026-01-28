@@ -87,6 +87,17 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
+    "coveragePathIgnorePatterns": [
+      "common/filters/all-exceptions\\.filter\\.ts",
+      "generated/.*",
+      "prisma/.*",
+      ".*\\.module\\.ts$",
+      ".*\\.dto\\.ts$",
+      "app\\.controller\\.ts",
+      "app\\.module\\.ts",
+      "configure-app.ts",
+      "main.ts"
+    ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   }
